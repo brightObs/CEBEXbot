@@ -1,0 +1,9 @@
+2025-01-17 15:37:12,889 - INFO - Using data file: data/raw\historical_data_BTCUSDT_5m_20250117_130503.csv
+2025-01-17 15:37:12,903 - INFO - Missing values forward-filled.
+2025-01-17 15:37:12,905 - INFO - Feature engineering applied: SMA, RSI, ATR, Bollinger Bands.
+2025-01-17 15:37:12,912 - INFO - Data split into training and test sets (80/20).
+2025-01-17 15:41:26,788 - INFO - Best RandomForest model found with parameters: {'bootstrap': True, 'max_depth': 10, 'min_samples_leaf': 2, 'min_samples_split': 10, 'n_estimators': 150}
+2025-01-17 15:41:32,198 - INFO - Cross-validation accuracy: 53.00%
+2025-01-17 15:41:32,224 - INFO - Test Accuracy: 48.50%
+2025-01-17 15:41:32,330 - INFO - Model trained and saved as 'models\random_forest_model.joblib'.
+2025-01-17 15:41:32,330 - INFO - Scaler saved as 'models\scaler.joblib'.
