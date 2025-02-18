@@ -1,7 +1,7 @@
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import json
 import logging
 
 # Initialize the logger
@@ -17,16 +17,21 @@ def evaluate_strategy(predictions, labels, historical_data):
     predictions = np.array(predictions)
     labels = np.array(labels)
 
-    # Check if historical_data is valid and contains 'close' prices
-    if not historical_data or historical_data == ...:
-        logger.error("Invalid historical data: Contains ellipsis or is empty.")
+    # Validate historical_data
+    if not isinstance(historical_data, list) or len(historical_data) == 0:
+        logger.error("Invalid historical data: It must be a non-empty list.")
         return
 
-    # Ensure historical_data is a list of dictionaries with 'close' key
+    # Ensure 'close' prices exist
     try:
         prices = np.array([float(candle['close']) for candle in historical_data])
-    except (TypeError, KeyError) as e:
+    except (TypeError, KeyError, ValueError) as e:
         logger.error(f"Error extracting 'close' prices from historical data: {e}")
+        return
+
+    # Ensure predictions match price data length
+    if len(predictions) != len(prices):
+        logger.error(f"Mismatch: {len(predictions)} predictions vs {len(prices)} prices.")
         return
 
     # Confusion Matrix
@@ -34,29 +39,33 @@ def evaluate_strategy(predictions, labels, historical_data):
     logger.info(f"Confusion Matrix:\n{cm}")
 
     # Profitability Analysis
-    initial_balance = 10000  # Example starting balance
+    initial_balance = 10000
     balance = initial_balance
     profit_trades = 0
     loss_trades = 0
+    risk_per_trade = 0.02  # Risk 2% per trade
 
     for i, prediction in enumerate(predictions[:-1]):
+        investment = balance * risk_per_trade  # Risk-based trading
         if prediction == 1:  # CALL
             price_change = (prices[i + 1] - prices[i]) / prices[i]
         else:  # PUT
             price_change = (prices[i] - prices[i + 1]) / prices[i]
 
-        profit = price_change * balance  # Example: invest full balance
+        profit = price_change * investment
         if profit > 0:
             profit_trades += 1
         else:
             loss_trades += 1
 
-        balance += profit
+        balance += profit  # Adjust balance with profit/loss
 
     win_rate = profit_trades / (profit_trades + loss_trades) if (profit_trades + loss_trades) > 0 else 0
+    max_drawdown = calculate_max_drawdown(prices)
+
     logger.info(f"Final Balance: ${balance:.2f}")
     logger.info(f"Win Rate: {win_rate:.2%}")
-    logger.info(f"Max Drawdown: {calculate_max_drawdown(prices):.2%}")
+    logger.info(f"Max Drawdown: {max_drawdown:.2%}")
 
     # Visualization
     visualize_backtest(historical_data, predictions, balance)
@@ -66,7 +75,7 @@ def calculate_max_drawdown(prices):
     """
     Calculate the maximum drawdown of the price series.
     """
-    peak = -np.inf
+    peak = prices[0]  # Start with the first price
     max_drawdown = 0
     for price in prices:
         if price > peak:
@@ -82,25 +91,19 @@ def visualize_backtest(historical_data, predictions, balance):
     """
     prices = [float(candle['close']) for candle in historical_data]
 
-    # Ensure the predictions and prices are aligned in length
-    assert len(predictions) == len(prices), "The length of predictions and prices do not match!"
+    if len(predictions) != len(prices):
+        logger.error("Mismatch in predictions and historical data length.")
+        return
 
     plt.figure(figsize=(12, 6))
-
-    # Plotting the price data
     plt.plot(prices, label="Price", color="blue")
 
-    # Plotting CALL predictions
-    call_predictions = [prices[i] for i, p in enumerate(predictions) if p == 1]
     call_indices = [i for i, p in enumerate(predictions) if p == 1]
-    plt.scatter(call_indices, call_predictions, color="green", label="CALL Predictions", marker="^")
-
-    # Plotting PUT predictions
-    put_predictions = [prices[i] for i, p in enumerate(predictions) if p == 0]
     put_indices = [i for i, p in enumerate(predictions) if p == 0]
-    plt.scatter(put_indices, put_predictions, color="red", label="PUT Predictions", marker="v")
 
-    # Finalizing the plot
+    plt.scatter(call_indices, [prices[i] for i in call_indices], color="green", label="CALL", marker="^")
+    plt.scatter(put_indices, [prices[i] for i in put_indices], color="red", label="PUT", marker="v")
+
     plt.title("Backtest Visualization")
     plt.xlabel("Candlestick Index")
     plt.ylabel("Price")
@@ -110,12 +113,12 @@ def visualize_backtest(historical_data, predictions, balance):
 
 
 if __name__ == "__main__":
-    # Example usage: Replace with your actual data
-    predictions = [1, 0, 1, 1, 0]  # Replace with your model's predictions
-    labels = [1, 0, 1, 1, 0]  # Replace with the actual labels
+    # Example data for testing
+    predictions = [1, 0, 1, 1, 0]
+    labels = [1, 0, 1, 1, 0]
     historical_data = [
         {'close': '100.00'}, {'close': '102.00'}, {'close': '101.00'},
         {'close': '103.00'}, {'close': '104.00'}
-    ]  # Replace with actual historical data
+    ]
 
     evaluate_strategy(predictions, labels, historical_data)

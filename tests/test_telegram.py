@@ -1,7 +1,7 @@
 import os
-from dotenv import load_dotenv
 import responses
 import pytest
+from dotenv import load_dotenv
 from bot.candlestick_signal import send_to_telegram
 
 # Load environment variables
@@ -11,12 +11,17 @@ load_dotenv()
 def telegram_env():
     return {
         "bot_token": os.getenv("TELEGRAM_BOT_TOKEN"),
-        "chat_id": os.getenv("TELEGRAM_CHAT_ID")
+        "chat_id": os.getenv("TELEGRAM_CHAT_ID"),
     }
 
 @responses.activate
 def test_send_to_telegram(telegram_env):
     bot_token = telegram_env["bot_token"]
+    chat_id = telegram_env["chat_id"]
+
+    assert bot_token, "TELEGRAM_BOT_TOKEN is missing!"
+    assert chat_id, "TELEGRAM_CHAT_ID is missing!"
+
     api_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
 
     # Mock Telegram API response
@@ -39,4 +44,4 @@ def test_send_to_telegram(telegram_env):
     assert response.status_code == 200
     assert response.json() == {"ok": True}
 
-    print("Test passed: Message sent to Telegram successfully.")
+    print("✅ Test passed: Message sent to Telegram successfully.")

@@ -1,0 +1,137 @@
+2025-02-10 13:09:09,583 - INFO - Created missing model directory: models
+2025-02-10 13:56:16,415 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 13:56:16,510 - ERROR - No models found in models. Available files: []
+2025-02-10 13:59:56,218 - INFO - Created missing model directory: models
+2025-02-10 13:59:56,220 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 13:59:56,245 - ERROR - No models found in models. Available files: []
+2025-02-10 14:02:04,590 - INFO - Created missing model directory: models
+2025-02-10 14:02:04,592 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:02:04,647 - ERROR - No models found in models. Available files: []
+2025-02-10 14:08:57,926 - ERROR - Model directory 'models' does not exist!
+2025-02-10 14:10:49,568 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:10:49,619 - INFO - Found model files: ['C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\random_forest_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\lgb_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\xgb_model_v20250210_132033.joblib']
+2025-02-10 14:10:49,619 - INFO - Model versions found: [20250210132033, 20250210132033, 20250210132033]
+2025-02-10 14:10:49,619 - INFO - Latest version determined: 20250210132033
+2025-02-10 14:10:49,620 - ERROR - No model found for version v20250210132033.
+2025-02-10 14:20:34,470 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:20:34,520 - INFO - Found model files: ['C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\random_forest_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\lgb_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\xgb_model_v20250210_132033.joblib']
+2025-02-10 14:20:34,520 - INFO - Model versions found: ['20250210_132033', '20250210_132033', '20250210_132033']
+2025-02-10 14:20:34,520 - INFO - Latest version determined: 20250210_132033
+2025-02-10 14:20:34,521 - INFO - Loading model: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\random_forest_model_v20250210_132033.joblib
+2025-02-10 14:20:34,521 - INFO - Loading scaler: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\scaler_v20250210_132033.joblib
+2025-02-10 14:23:23,281 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:23:23,307 - INFO - Found model files: ['C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\random_forest_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\lgb_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\xgb_model_v20250210_132033.joblib']
+2025-02-10 14:23:23,307 - INFO - Model versions found: ['20250210_132033', '20250210_132033', '20250210_132033']
+2025-02-10 14:23:23,307 - INFO - Latest version determined: 20250210_132033
+2025-02-10 14:23:23,308 - INFO - Loading model: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\random_forest_model_v20250210_132033.joblib
+2025-02-10 14:23:23,308 - INFO - Loading scaler: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\scaler_v20250210_132033.joblib
+2025-02-10 14:27:07,272 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:27:07,361 - INFO - Found model files: ['C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\random_forest_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\lgb_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\xgb_model_v20250210_132033.joblib']
+2025-02-10 14:27:07,362 - INFO - Model versions found: ['20250210_132033', '20250210_132033', '20250210_132033']
+2025-02-10 14:27:07,363 - INFO - Latest version determined: 20250210_132033
+2025-02-10 14:27:07,363 - INFO - Loading model: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\random_forest_model_v20250210_132033.joblib
+2025-02-10 14:27:07,363 - INFO - Loading scaler: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\scaler_v20250210_132033.joblib
+2025-02-10 14:27:08,343 - INFO - Training data features: 16
+2025-02-10 14:27:08,343 - INFO - Evaluation data features: 14
+2025-02-10 14:28:10,631 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:28:10,656 - INFO - Found model files: ['C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\random_forest_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\lgb_model_v20250210_132033.joblib', 'C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\\xgb_model_v20250210_132033.joblib']
+2025-02-10 14:28:10,656 - INFO - Model versions found: ['20250210_132033', '20250210_132033', '20250210_132033']
+2025-02-10 14:28:10,656 - INFO - Latest version determined: 20250210_132033
+2025-02-10 14:28:10,657 - INFO - Loading model: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\random_forest_model_v20250210_132033.joblib
+2025-02-10 14:28:10,657 - INFO - Loading scaler: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\scaler_v20250210_132033.joblib
+2025-02-10 14:28:11,146 - INFO - Training data features: 16
+2025-02-10 14:28:11,146 - INFO - Evaluation data features: 14
+2025-02-10 14:32:48,915 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:32:48,957 - INFO - Expected Features (16): ['open', 'high', 'low', 'close', 'volume', 'SMA_10', 'SMA_50', 'SMA_100', 'RSI', 'ATR', 'BB_upper', 'BB_middle', 'BB_lower', 'MACD', 'MACD_signal', 'MACD_hist']
+2025-02-10 14:32:48,957 - INFO - Actual Features in Data (20): ['timestamp', 'open', 'high', 'low', 'close', 'volume', 'hour', 'day_of_week', 'SMA_10', 'SMA_50', 'RSI', 'ATR', 'BB_upper', 'BB_lower', 'target', 'SMA_100', 'BB_middle', 'MACD', 'MACD_signal', 'MACD_hist']
+2025-02-10 14:32:48,958 - WARNING - Unexpected Extra Features: ['timestamp', 'hour', 'day_of_week', 'target']
+2025-02-10 14:32:48,970 - INFO - Latest model version determined: 20250210_132033
+2025-02-10 14:32:48,971 - INFO - Loading model: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\random_forest_model_v20250210_132033.joblib
+2025-02-10 14:32:48,971 - INFO - Loading scaler: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\scaler_v20250210_132033.joblib
+2025-02-10 14:32:49,657 - INFO - Training data features: 16
+2025-02-10 14:32:49,658 - INFO - Evaluation data features: 16
+2025-02-10 14:32:49,753 - INFO - Model Accuracy: 55.80%
+2025-02-10 14:32:49,753 - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.54      0.45      0.50       477
+           1       0.57      0.65      0.61       523
+
+    accuracy                           0.56      1000
+   macro avg       0.56      0.55      0.55      1000
+weighted avg       0.56      0.56      0.55      1000
+
+2025-02-10 14:32:49,754 - INFO - Confusion Matrix:
+[[217 260]
+ [182 341]]
+2025-02-10 14:33:08,854 - INFO - Using data file for evaluation: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:33:08,875 - INFO - Expected Features (16): ['open', 'high', 'low', 'close', 'volume', 'SMA_10', 'SMA_50', 'SMA_100', 'RSI', 'ATR', 'BB_upper', 'BB_middle', 'BB_lower', 'MACD', 'MACD_signal', 'MACD_hist']
+2025-02-10 14:33:08,875 - INFO - Actual Features in Data (20): ['timestamp', 'open', 'high', 'low', 'close', 'volume', 'hour', 'day_of_week', 'SMA_10', 'SMA_50', 'RSI', 'ATR', 'BB_upper', 'BB_lower', 'target', 'SMA_100', 'BB_middle', 'MACD', 'MACD_signal', 'MACD_hist']
+2025-02-10 14:33:08,875 - WARNING - Unexpected Extra Features: ['timestamp', 'hour', 'day_of_week', 'target']
+2025-02-10 14:33:08,885 - INFO - Latest model version determined: 20250210_132033
+2025-02-10 14:33:08,885 - INFO - Loading model: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\random_forest_model_v20250210_132033.joblib
+2025-02-10 14:33:08,886 - INFO - Loading scaler: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/models\scaler_v20250210_132033.joblib
+2025-02-10 14:33:09,428 - INFO - Training data features: 16
+2025-02-10 14:33:09,429 - INFO - Evaluation data features: 16
+2025-02-10 14:33:09,538 - INFO - Model Accuracy: 55.80%
+2025-02-10 14:33:09,538 - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.54      0.45      0.50       477
+           1       0.57      0.65      0.61       523
+
+    accuracy                           0.56      1000
+   macro avg       0.56      0.55      0.55      1000
+weighted avg       0.56      0.56      0.55      1000
+
+2025-02-10 14:33:09,539 - INFO - Confusion Matrix:
+[[217 260]
+ [182 341]]
+2025-02-10 14:42:37,865 - INFO - Using data file: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:53:27,964 - INFO - Using data file: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 14:53:28,045 - WARNING - NaN values detected in features. Filling with median values.
+2025-02-10 14:53:55,012 - INFO - Best LightGBM Parameters: {'num_leaves': 56, 'learning_rate': 0.1343430698939377, 'n_estimators': 262, 'min_child_samples': 58, 'colsample_bytree': 0.911063854295532}
+2025-02-10 14:54:22,961 - INFO - Ensemble Model Accuracy: 60.48%
+2025-02-10 14:54:22,997 - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.62      0.60      0.61       108
+           1       0.59      0.61      0.60       102
+
+    accuracy                           0.60       210
+   macro avg       0.60      0.60      0.60       210
+weighted avg       0.61      0.60      0.60       210
+
+2025-02-10 14:54:23,005 - INFO - Confusion Matrix:
+[[65 43]
+ [40 62]]
+2025-02-10 15:12:18,518 - INFO - Using data file: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 15:12:18,573 - WARNING - NaN values detected in features. Filling with median values.
+2025-02-10 15:13:27,816 - INFO - Best LightGBM Parameters: {'num_leaves': 88, 'learning_rate': 0.19994425517261943, 'n_estimators': 457, 'min_child_samples': 30, 'colsample_bytree': 0.57037967986532}
+2025-02-10 15:15:00,701 - INFO - Using data file: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 15:15:00,739 - WARNING - NaN values detected in features. Filling with median values.
+2025-02-10 15:16:33,548 - INFO - Best LightGBM Parameters: {'num_leaves': 116, 'learning_rate': 0.1666048581610358, 'n_estimators': 396, 'min_child_samples': 17, 'colsample_bytree': 0.7836272564810358}
+2025-02-10 15:17:17,803 - INFO - Using data file: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 15:17:17,835 - WARNING - NaN values detected in features. Filling with median values.
+2025-02-10 15:18:31,190 - INFO - Best LightGBM Parameters: {'num_leaves': 77, 'learning_rate': 0.16495638183799505, 'n_estimators': 285, 'min_child_samples': 17, 'colsample_bytree': 0.7040971479841829}
+2025-02-10 15:26:00,992 - INFO - Using data file: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 15:26:01,054 - WARNING - NaN values detected in features. Filling with median values.
+2025-02-10 15:26:59,875 - INFO - Best LightGBM Parameters: {'num_leaves': 186, 'learning_rate': 0.12128815362958621, 'n_estimators': 476, 'min_child_samples': 12, 'colsample_bytree': 0.5321918335594683}
+2025-02-10 15:29:33,137 - INFO - Using data file: C:/Users/TOSHIBA/PycharmProjects/CEBEXbot/data/raw\historical_data_TRXUSDT_5m_20250210_114904.csv
+2025-02-10 15:29:33,187 - WARNING - NaN values detected in features. Filling with median values.
+2025-02-10 16:16:09,385 - INFO - Scaler saved to C:\Users\TOSHIBA\PycharmProjects\CEBEXbot\models\scaler_v1.joblib
+2025-02-10 16:24:37,780 - INFO - Best Optuna Hyperparameters: {'n_estimators': 250, 'max_depth': 13, 'min_samples_split': 3, 'min_samples_leaf': 1, 'max_features': 'log2'}
+2025-02-10 16:24:40,269 - INFO - Evaluating model tuned by Optuna...
+2025-02-10 16:24:40,437 - INFO - Accuracy: 0.6573, Precision: 0.6533, Recall: 0.6806, F1 Score: 0.6667, AUC-ROC: 0.6871
+2025-02-10 16:29:25,378 - INFO - Model saved to ../models/optuna_best_model.joblib
+2025-02-10 18:34:56,411 - INFO - Best parameters from GridSearchCV: {'bootstrap': False, 'max_depth': None, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 200}
+2025-02-10 18:34:56,425 - INFO - Evaluating model tuned by GridSearchCV...
+2025-02-10 18:34:57,294 - INFO - Accuracy: 0.6853, Precision: 0.6875, Recall: 0.6875, F1 Score: 0.6875, AUC-ROC: 0.6982
+2025-02-10 19:15:06,418 - INFO - Model saved to ../models/grid_search_best_model.joblib
+2025-02-10 19:41:14,664 - INFO - Best parameters from RandomizedSearchCV: {'n_estimators': 200, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'sqrt', 'max_depth': 30, 'bootstrap': False}
+2025-02-10 19:41:14,672 - INFO - Evaluating model tuned by RandomizedSearchCV...
+2025-02-10 19:41:15,098 - INFO - Accuracy: 0.6853, Precision: 0.6875, Recall: 0.6875, F1 Score: 0.6875, AUC-ROC: 0.6982
+2025-02-11 00:07:47,374 - INFO - Model saved to ../models/random_search_best_model.joblib
+2025-02-11 00:07:57,059 - INFO - Evaluating model tuned by Stacking...
+2025-02-11 00:07:57,151 - INFO - Accuracy: 0.6189, Precision: 0.6259, Recall: 0.6042, F1 Score: 0.6148, AUC-ROC: 0.6871
+2025-02-11 00:08:03,970 - INFO - Model saved to ../models/stacking_model.joblib

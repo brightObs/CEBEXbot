@@ -4,13 +4,14 @@ from bot.bot import start, stop
 from telegram import Update
 from telegram.ext import ContextTypes
 
-
 class TestBot(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         # Set up mocks for the Telegram bot
         self.update = AsyncMock(spec=Update)
         self.context = MagicMock(spec=ContextTypes)
-        self.context.bot_data = {"subscribers": []}  # Initialize bot_data
+
+        # Initialize bot_data with an actual dictionary
+        self.context.bot_data = {"subscribers": []}
 
     async def test_start_command_new_user(self):
         self.update.effective_chat.id = 12345
@@ -22,7 +23,7 @@ class TestBot(unittest.IsolatedAsyncioTestCase):
         # Check if the user was added to subscribers
         self.assertIn(12345, self.context.bot_data["subscribers"])
         self.update.message.reply_text.assert_awaited_with(
-            "Signal bot activated! You will receive accurate signals."
+            "✅ You have subscribed to trading signals!"
         )
 
     async def test_start_command_existing_user(self):
@@ -34,8 +35,9 @@ class TestBot(unittest.IsolatedAsyncioTestCase):
         await start(self.update, self.context)
 
         # Ensure the user is not added again
+        self.assertIn(12345, self.context.bot_data["subscribers"])
         self.update.message.reply_text.assert_awaited_with(
-            "You are already subscribed to signals."
+            "⚠️ You are already subscribed!"
         )
 
     async def test_stop_command_subscribed_user(self):
@@ -43,13 +45,13 @@ class TestBot(unittest.IsolatedAsyncioTestCase):
         self.update.message.reply_text = AsyncMock()
 
         # Simulate /stop command for a subscribed user
-        self.context.bot_data["subscribers"] = [12345]  # User already subscribed
+        self.context.bot_data["subscribers"] = [12345]
         await stop(self.update, self.context)
 
         # Ensure the user was removed from subscribers
         self.assertNotIn(12345, self.context.bot_data["subscribers"])
         self.update.message.reply_text.assert_awaited_with(
-            "Signal bot deactivated. You will no longer receive signals."
+            "🚫 You have unsubscribed from trading signals."
         )
 
     async def test_stop_command_unsubscribed_user(self):
@@ -57,14 +59,12 @@ class TestBot(unittest.IsolatedAsyncioTestCase):
         self.update.message.reply_text = AsyncMock()
 
         # Simulate /stop command for an unsubscribed user
-        self.context.bot_data["subscribers"] = []  # No subscribers
         await stop(self.update, self.context)
 
         # Ensure no removal happens
         self.update.message.reply_text.assert_awaited_with(
-            "You are not subscribed to signals."
+            "⚠️ You are not subscribed!"
         )
-
 
 if __name__ == "__main__":
     unittest.main()

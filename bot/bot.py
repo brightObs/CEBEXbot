@@ -1,68 +1,88 @@
 import logging
 import os
+import json
 import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from apscheduler.schedulers.background import BackgroundScheduler
-from bot.candlestick_signal import generate_signal, start_websocket
 from dotenv import load_dotenv
+from bot.candlestick_signal import generate_signal, get_candlestick_data
+from bot.websocket_handler import start_websocket  # WebSocket handler module
 
 # Load environment variables
-env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path=env_path)
 
-# Define the log directory and file
-log_dir = r"C:\Users\TOSHIBA\PycharmProjects\CEBEXbot\data\logs"
-log_file = os.path.join(log_dir, "bot.log")
+# Define directories
+LOG_DIR = r"C:\Users\TOSHIBA\PycharmProjects\CEBEXbot\data\logs"
+SUBSCRIBERS_FILE = os.path.join(os.path.dirname(__file__), "../config/subscribers.json")
 
-# Ensure the log directory exists
-os.makedirs(log_dir, exist_ok=True)
+# Ensure directories exist
+os.makedirs(LOG_DIR, exist_ok=True)
 
 # Configure logging
+LOG_FILE = os.path.join(LOG_DIR, "bot.log")
 logging.basicConfig(
-    filename=os.path.abspath(log_file),
-    filemode='a',  # Append to the log file
+    filename=os.path.abspath(LOG_FILE),
+    filemode="a",
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.DEBUG,  # Set to DEBUG for detailed logging
+    level=logging.DEBUG,
 )
-
 logger = logging.getLogger(__name__)
 
-# Bot command handlers
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Handles the /start command. Subscribes the user to signal notifications.
-    """
-    chat_id = update.effective_chat.id
-    subscribers = context.bot_data.setdefault("subscribers", [])
+# Global scheduler instance
+scheduler = BackgroundScheduler()
 
-    if chat_id not in subscribers:
-        subscribers.append(chat_id)
-        await update.message.reply_text("Signal bot activated! You will receive accurate signals.")
-        logger.info(f"User {chat_id} subscribed.")
+
+# ** Subscription Management **
+def load_subscribers():
+    """Load subscribers from file."""
+    if os.path.exists(SUBSCRIBERS_FILE):
+        with open(SUBSCRIBERS_FILE, "r") as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return []
+    return []
+
+
+def save_subscribers(subscribers):
+    """Save subscribers to file."""
+    with open(SUBSCRIBERS_FILE, "w") as f:
+        json.dump(subscribers, f)
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+
+    # Ensure 'subscribers' key exists
+    if "subscribers" not in context.bot_data:
+        context.bot_data["subscribers"] = []
+
+    if chat_id in context.bot_data["subscribers"]:
+        await update.message.reply_text("⚠️ You are already subscribed!")
     else:
-        await update.message.reply_text("You are already subscribed to signals.")
+        context.bot_data["subscribers"].append(chat_id)  # Ensure modification happens
+        await update.message.reply_text("✅ You have subscribed to trading signals!")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Handles the /stop command. Unsubscribes the user from signal notifications.
-    """
     chat_id = update.effective_chat.id
-    subscribers = context.bot_data.get("subscribers", [])
 
-    if chat_id in subscribers:
-        subscribers.remove(chat_id)
-        await update.message.reply_text("Signal bot deactivated. You will no longer receive signals.")
-        logger.info(f"User {chat_id} unsubscribed.")
+    # Ensure 'subscribers' key exists
+    if "subscribers" not in context.bot_data:
+        context.bot_data["subscribers"] = []
+
+    if chat_id in context.bot_data["subscribers"]:
+        context.bot_data["subscribers"].remove(chat_id)  # Properly remove user
+        await update.message.reply_text("🚫 You have unsubscribed from trading signals.")
     else:
-        await update.message.reply_text("You are not subscribed to signals.")
+        await update.message.reply_text("⚠️ You are not subscribed!")
 
+
+# ** Signal Notifications **
 async def notify_signals(context: ContextTypes.DEFAULT_TYPE):
-    """
-    Notifies all subscribed users with the latest signal.
-    """
+    """Notifies all subscribed users with the latest signal."""
     try:
-        # Replace with your function to fetch candlestick data
         candles = get_candlestick_data()
         if len(candles) < 50:
             logger.debug("Insufficient candlestick data for signal generation.")
@@ -71,9 +91,11 @@ async def notify_signals(context: ContextTypes.DEFAULT_TYPE):
         signal = generate_signal(candles)
         if signal in ["CALL", "PUT"]:
             logger.info(f"Generated signal: {signal}")
-            for chat_id in context.bot_data.get("subscribers", []):
+
+            subscribers = load_subscribers()
+            for chat_id in subscribers:
                 try:
-                    await context.bot.send_message(chat_id=chat_id, text=f"New Signal: {signal}")
+                    await context.bot.send_message(chat_id=chat_id, text=f"🔹 **Signal:** {signal}")
                 except Exception as e:
                     logger.error(f"Error sending signal to chat {chat_id}: {e}")
         else:
@@ -81,15 +103,15 @@ async def notify_signals(context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Error in notify_signals: {e}")
 
+
+# ** Main Bot Function **
 def run_bot(token):
-    """
-    Main function to initialize and run the Telegram bot.
-    """
+    """Main function to initialize and run the Telegram bot."""
     if not token:
         logger.error("Bot token not set! Please provide a valid token.")
         return
 
-    # Initialize WebSocket for candlestick updates
+    # Start WebSocket for candlestick updates
     try:
         logger.info("Starting WebSocket connection...")
         start_websocket()
@@ -102,8 +124,6 @@ def run_bot(token):
     application.add_handler(CommandHandler("stop", stop))
 
     # Initialize scheduler for signal notifications
-    scheduler = BackgroundScheduler()
-
     def notify_signals_job():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -125,7 +145,11 @@ def run_bot(token):
         application.run_polling()
     except Exception as e:
         logger.error(f"Error running bot: {e}")
+    finally:
+        scheduler.shutdown()
 
+
+# ** Run the bot if executed directly **
 if __name__ == "__main__":
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:

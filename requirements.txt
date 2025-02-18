@@ -1,9 +1,16 @@
 python-telegram-bot
 requests
 ta
+tenacity
+ccxt
+shap
 matplotlib
 pytest
 flake8
+lightgbm
+scikit-optimize
+xgboost
+imblearn
 pytest-responses
 apscheduler
 python-dotenv

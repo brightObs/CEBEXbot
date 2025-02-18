@@ -1,122 +1,233 @@
-import os
-import glob
+# === LIBRARIES ===
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
-from joblib import dump
+import lightgbm as lgb
+import xgboost as xgb
+from sklearn.ensemble import RandomForestClassifier, StackingClassifier, ExtraTreesClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (accuracy_score, classification_report,
+                             confusion_matrix, roc_auc_score, balanced_accuracy_score)
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.preprocessing import RobustScaler
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline
+import joblib
+import os
+from datetime import datetime
+import warnings
+from collections import Counter
 import talib
-from config.logger import get_logger
 
-# Initialize logger
-logger = get_logger()
+warnings.filterwarnings("ignore")
 
-# Dynamically select the most recent CSV file from the 'data/raw/' directory
-data_folder = 'data/raw/'
-csv_files = glob.glob(os.path.join(data_folder, 'historical_data_BTCUSDT_5m_*.csv'))
-if not csv_files:
-    raise FileNotFoundError("No CSV files found in the 'data/raw/' directory.")
-latest_file = max(csv_files, key=os.path.getmtime)  # Select the most recent file
+# === SAVE MODEL WITH VERSIONING ===
+def save_model(model, model_name="trading_model"):
+    version = datetime.now().strftime("%Y%m%d_%H%M%S")
+    model_dir = "models"
+    os.makedirs(model_dir, exist_ok=True)
+    model_file_path = f"{model_dir}/{model_name}_v{version}.pkl"
+    joblib.dump(model, model_file_path)
+    print(f"Model saved at: {model_file_path}")
 
-logger.info(f"Using data file: {latest_file}")
+# === DATA LOADING & PREPROCESSING ===
+# Load the processed data which already contains day_of_week and hour columns
+df = pd.read_csv("data/processed/processed_data.csv")
 
-# Load the latest historical data
-df = pd.read_csv(latest_file)
+# Create a synthetic timestamp from day_of_week and hour.
+# This timestamp is used solely for sorting; the day_of_week and hour columns remain available as features.
+df['timestamp'] = pd.to_datetime(
+    df['day_of_week'].astype(str) + ' ' + df['hour'].astype(str),
+    format='%w %H'
+)
+df = df.sort_values('timestamp').set_index('timestamp')
 
-# Handle missing values (forward fill)
-df.ffill(inplace=True)  # Forward fill to handle missing data
-logger.info("Missing values forward-filled.")
+# === ADVANCED FEATURE ENGINEERING ===
+def add_advanced_features(df):
+    """
+    Enhance the dataset with additional technical indicators and lagged features.
+    This function computes missing indicators if they are not already present.
+    """
+    # Compute missing indicators if necessary:
+    if 'SMA_10' not in df.columns:
+        df['SMA_10'] = talib.SMA(df['close'].values, timeperiod=10)
+    if 'RSI_14' not in df.columns:
+        df['RSI_14'] = talib.RSI(df['close'].values, timeperiod=14)  # Changed from 'RSI' to 'RSI_14'
+    if 'ATR' not in df.columns:
+        df['ATR'] = talib.ATR(df['high'].values, df['low'].values, df['close'].values, timeperiod=14)
+    if 'BB_upper' not in df.columns or 'BB_lower' not in df.columns:
+        if 'SMA_20' not in df.columns:
+            df['SMA_20'] = talib.SMA(df['close'].values, timeperiod=20)
+        upper, middle, lower = talib.BBANDS(df['close'].values, timeperiod=20, nbdevup=2, nbdevdn=2)
+        df['BB_upper'] = upper
+        df['BB_lower'] = lower
 
-# Feature Engineering: Add technical indicators
-def add_features(df):
-    closes = df['close'].values
-    highs = df['high'].values
-    lows = df['low'].values
-    volumes = df['volume'].values
+    # Calculate missing EMAs if they don't already exist
+    if 'EMA_12' not in df.columns:
+        df['EMA_12'] = talib.EMA(df['close'].values, timeperiod=12)
+    if 'EMA_26' not in df.columns:
+        df['EMA_26'] = talib.EMA(df['close'].values, timeperiod=26)
 
-    # Adding moving averages
-    df['SMA_10'] = talib.SMA(closes, timeperiod=10)
-    df['SMA_50'] = talib.SMA(closes, timeperiod=50)
+    # Calculate MACD and MACD signal
+    if 'MACD' not in df.columns or 'MACD_signal' not in df.columns:
+        macd, macd_signal, _ = talib.MACD(df['close'].values, fastperiod=12, slowperiod=26, signalperiod=9)
+        df['MACD'] = macd
+        df['MACD_signal'] = macd_signal
 
-    # Adding RSI (Relative Strength Index)
-    df['RSI'] = talib.RSI(closes, timeperiod=14)
+    # Price momentum features
+    df['EMA_12_26_diff'] = df['EMA_12'] - df['EMA_26']
+    df['MACD_hist'] = df['MACD'] - df['MACD_signal']
+    df['MACD_hist_change'] = df['MACD_hist'].diff()
 
-    # Adding ATR (Average True Range)
-    df['ATR'] = talib.ATR(highs, lows, closes, timeperiod=14)
+    # Volatility features
+    df['BB_width'] = (df['BB_upper'] - df['BB_lower']) / df['SMA_10']
+    df['ATR_pct'] = df['ATR'] / df['close']
+    df['volatility_20'] = df['close'].pct_change().rolling(20).std()
 
-    # Adding Bollinger Bands (20 period, 2 std deviation)
-    upperband, middleband, lowerband = talib.BBANDS(closes, timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
-    df['BB_upper'] = upperband
-    df['BB_lower'] = lowerband
+    # Volume features
+    df['volume_change'] = df['volume'].pct_change()
+    df['volume_sma_10'] = df['volume'].rolling(10).mean()
 
-    return df
+    # Price action features
+    df['price_change_5'] = df['close'].pct_change(5)
+    df['price_change_10'] = df['close'].pct_change(10)
+    df['price_change_20'] = df['close'].pct_change(20)
 
-# Apply feature engineering
-df = add_features(df)
-logger.info("Feature engineering applied: SMA, RSI, ATR, Bollinger Bands.")
+    # Lagged features
+    for lag in [1, 2, 3, 5, 8, 12, 20]:
+        df[f'RSI_lag_{lag}'] = df['RSI_14'].shift(lag)  # Update 'RSI' to 'RSI_14'
+        df[f'MACD_lag_{lag}'] = df['MACD'].shift(lag)
+        df[f'close_lag_{lag}'] = df['close'].shift(lag)
+        df[f'volume_lag_{lag}'] = df['volume'].shift(lag)
 
-# Handle missing values after adding indicators
-df.ffill(inplace=True)
+    # Interaction features
+    df['RSI_MACD_interaction'] = df['RSI_14'] * df['MACD']  # Update 'RSI' to 'RSI_14'
+    df['volume_price_interaction'] = df['volume'] * df['close']
 
-# Feature Engineering: Use 'open', 'high', 'low', 'close', 'volume', and technical indicators as features
-X = df[['open', 'high', 'low', 'close', 'volume', 'SMA_10', 'SMA_50', 'RSI', 'ATR', 'BB_upper', 'BB_lower']].values
+    return df.dropna()
 
-# Create the target variable: 1 for Bullish (next close > current close), 0 for Bearish
-# We are predicting 2 minutes ahead (based on your strategy)
-df['target'] = np.where(df['close'].shift(-2) > df['close'], 1, 0)
 
-# Drop rows with NaN targets (introduced by shifting)
-df.dropna(subset=['target'], inplace=True)
+# Apply advanced feature engineering
+df = add_advanced_features(df)
+
+# === TARGET ENGINEERING ===
+# Consistent with the preprocessing, we use a prediction horizon of 3 candles ahead
+df['future_price'] = df['close'].shift(-3)
+df['target'] = (df['future_price'] > df['close']).astype(int)
+df = df.dropna()
+
+# === FEATURE SELECTION ===
+features = [
+    'open', 'high', 'low', 'close', 'volume', 'SMA_10', 'SMA_50',
+    'RSI', 'ATR', 'BB_upper', 'BB_lower', 'EMA_12', 'EMA_26',
+    'RSI_14', 'MACD', 'MACD_signal', 'EMA_12_26_diff', 'MACD_hist',
+    'BB_width', 'ATR_pct', 'volatility_20', 'volume_change',
+    'volume_sma_10', 'price_change_5', 'price_change_10',
+    'price_change_20', 'RSI_MACD_interaction', 'volume_price_interaction',
+    'RSI_lag_1', 'RSI_lag_2', 'MACD_lag_1', 'MACD_lag_2', 'close_lag_1',
+    'close_lag_2', 'volume_lag_1', 'volume_lag_2'
+]
+
+# Ensure all required feature columns exist in the DataFrame
+missing_feats = [feat for feat in features if feat not in df.columns]
+if missing_feats:
+    raise ValueError(f"The following required feature columns are missing: {missing_feats}")
+
+X = df[features]
 y = df['target']
 
-# Split the data into training and test sets (80% training, 20% test)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=False)
-logger.info("Data split into training and test sets (80/20).")
+# === BALANCING DATA ===
+# Check class distribution
+from collections import Counter
+class_counts = Counter(y)
+print(f"Class distribution before SMOTE: {class_counts}")
 
-# Feature scaling
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+# Apply SMOTE only if there is a significant imbalance
+if abs(class_counts[0] - class_counts[1]) > 50:
+    smote = SMOTE(sampling_strategy='auto', random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(X, y)
+    print(f"Class distribution after SMOTE: {Counter(y_resampled)}")
+else:
+    print("SMOTE not applied as classes are already balanced.")
+    X_resampled, y_resampled = X, y
 
-# Train the Random Forest model with GridSearchCV for hyperparameter tuning
-param_grid = {
-    'n_estimators': [50, 100, 150],
-    'max_depth': [5, 10, 15, None],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 2, 4],
-    'bootstrap': [True, False]
-}
+# === SPLITTING DATA ===
+split_idx = int(0.8 * len(X_resampled))
+X_train, X_test = X_resampled.iloc[:split_idx], X_resampled.iloc[split_idx:]
+y_train, y_test = y_resampled.iloc[:split_idx], y_resampled.iloc[split_idx:]
 
-grid_search = GridSearchCV(estimator=RandomForestClassifier(random_state=42),
-                           param_grid=param_grid,
-                           cv=3,  # 3-fold cross-validation
-                           n_jobs=-1, verbose=2, scoring='accuracy')
+# === MODEL ARCHITECTURE ===
+# Define base learners
+base_models = [
+    ('lgbm', lgb.LGBMClassifier(
+        num_leaves=80,
+        max_depth=15,
+        learning_rate=0.02,
+        n_estimators=1800,
+        class_weight='balanced',
+        boosting_type='gbdt',
+        subsample=0.8,
+        colsample_bytree=0.9,
+        random_state=42
+    )),
+    ('xgb', xgb.XGBClassifier(
+        learning_rate=0.05,
+        max_depth=12,
+        subsample=0.9,
+        scale_pos_weight=1.1,
+        n_estimators=1000,
+        tree_method='hist',
+        colsample_bytree=0.85,
+        random_state=42,
+        use_label_encoder=False,
+        eval_metric='logloss'
+    )),
+    ('rf', RandomForestClassifier(
+        n_estimators=900,
+        class_weight='balanced_subsample',
+        max_depth=18,
+        min_samples_split=6,
+        max_features='sqrt',
+        random_state=42
+    )),
+    ('et', ExtraTreesClassifier(
+        n_estimators=700,
+        max_depth=17,
+        min_samples_split=4,
+        max_features='sqrt',
+        random_state=42
+    ))
+]
 
-grid_search.fit(X_train_scaled, y_train)
+# Meta-model for stacking
+meta_model = LogisticRegression(class_weight='balanced', C=0.07, max_iter=2500, random_state=42)
+stacking_model = StackingClassifier(
+    estimators=base_models,
+    final_estimator=meta_model,
+    stack_method='predict_proba',
+    passthrough=True,
+    cv=5
+)
 
-# Get the best model from grid search
-best_rf_model = grid_search.best_estimator_
-logger.info(f"Best RandomForest model found with parameters: {grid_search.best_params_}")
+# === FINAL PIPELINE ===
+# Use RobustScaler to ensure consistency during inference (matches the training pipeline)
+pipeline = Pipeline([
+    ('scaler', RobustScaler()),
+    ('model', stacking_model)
+])
 
-# Evaluate the model using cross-validation
-cross_val_scores = cross_val_score(best_rf_model, X_train_scaled, y_train, cv=5)  # 5-fold cross-validation
-logger.info(f"Cross-validation accuracy: {cross_val_scores.mean() * 100:.2f}%")
+# === TRAINING ===
+pipeline.fit(X_train, y_train)
 
-# Evaluate the model on the test set
-test_accuracy = best_rf_model.score(X_test_scaled, y_test)
-logger.info(f"Test Accuracy: {test_accuracy * 100:.2f}%")
+# === EVALUATION ===
+y_pred = pipeline.predict(X_test)
+y_proba = pipeline.predict_proba(X_test)[:, 1]  # Probability of class 1
 
-# Define the model and scaler saving paths
-model_dir = 'models'  # Save models in a 'models' directory
-if not os.path.exists(model_dir):
-    os.makedirs(model_dir)
+# Evaluate performance
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+print("Balanced Accuracy Score:", balanced_accuracy_score(y_test, y_pred))
+print("ROC-AUC Score:", roc_auc_score(y_test, y_proba))
 
-model_file = os.path.join(model_dir, 'random_forest_model.joblib')
-scaler_file = os.path.join(model_dir, 'scaler.joblib')
+# Save the final model
+save_model(pipeline)
 
-# Save the trained model and scaler
-dump(best_rf_model, model_file)
-dump(scaler, scaler_file)
-logger.info(f"Model trained and saved as '{model_file}'.")
-logger.info(f"Scaler saved as '{scaler_file}'.")
